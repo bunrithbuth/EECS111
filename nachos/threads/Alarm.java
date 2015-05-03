@@ -7,6 +7,12 @@ import nachos.machine.*;
  * until a certain time.
  */
 public class Alarm {
+    private static LinkedList Queue;
+    private static long[] wakeTime = new long[10];
+    private static int count1 = 0;
+    private static int count2 = 0;
+    private static int head = 0;
+    
 	/**
 	 * Allocate a new Alarm. Set the machine's timer interrupt handler to this
 	 * alarm's callback.
@@ -29,7 +35,15 @@ public class Alarm {
 	 * should be run.
 	 */
 	public void timerInterrupt() {
-		KThread.currentThread().yield();
+        while(count2 > 0 && wakeTime[head] >= Machine.timer().getTime())
+        {
+            boolean status = Machine.interrupt().disable();
+            ((KThread) Queue.removeFirst()).ready();
+            Machine.interrupt().restore(status);
+            count2--;
+            head = head++ % 10;
+        }
+        KThread.currentThread().yield();
 	}
 
 	/**
@@ -46,8 +60,25 @@ public class Alarm {
 	 */
 	public void waitUntil(long x) {
 		// for now, cheat just to get something working (busy waiting is bad)
-		long wakeTime = Machine.timer().getTime() + x;
-		while (wakeTime > Machine.timer().getTime())
-			KThread.yield();
+		//long wakeTime = Machine.timer().getTime() + x;
+		//while (wakeTime > Machine.timer().getTime())
+		//	KThread.yield();
+        
+        if(x ==0)
+        {
+            return;
+        }
+        if(count2 >= 10)
+        {
+            return;
+        }
+        
+        wakeTime[count1] = Machine.timer().getTime() + x;
+        count1 = count1++ %10;
+        count2++;
+        Queue.add(KThread.currentThread());
+        Machine.interrupt().disable();
+        KThread.currentThread().sleep();
 	}
+    
 }
