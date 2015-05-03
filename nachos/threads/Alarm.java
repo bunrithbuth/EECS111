@@ -64,17 +64,17 @@ public class Alarm {
 		//while (wakeTime > Machine.timer().getTime())
 		//	KThread.yield();
         
-        if(x ==0)
-        {
-            return;
-        }
-        if(count2 >= 10)
-        {
-            return;
-        }
+	   if(x ==0)
+	   {
+	       return;
+	    }
+	    if(count2 >= 10)
+	    {
+	        return;
+	    }
         
-        wakeTime[count1] = Machine.timer().getTime() + x;
-        count1 = count1++ %10;
+	 wakeTime[count1] = Machine.timer().getTime() + x;
+	 count1 = count1++ %10;
         count2++;
         Queue.add(KThread.currentThread());
         Machine.interrupt().disable();
