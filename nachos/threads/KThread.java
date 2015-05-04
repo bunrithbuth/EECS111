@@ -198,6 +198,18 @@ public class KThread {
 		Lib.debug(dbgThread, "Finishing thread: " + currentThread.toString());
 
 		Machine.interrupt().disable();
+		
+		ThreadQueue curJoinQueue = currentThread.joinQueue;
+
+    		//this runs all the threads that were joined until finish;
+		//if no joinQueue created then createdjoinqueue is null
+		if (createdJoinQueue != null) {
+        		KThread thread = createdJoinQueue.nextThread();
+        		while(thread != null) {
+           	 		thread.ready();
+            			thread = creadJoinQueue.nextThread();
+        		}
+    		}
 
 		Machine.autoGrader().finishingCurrentThread();
 
@@ -288,7 +300,28 @@ public class KThread {
 
 		Lib.assertTrue(this != currentThread);
 
+		//Disable interrupts;
+		boolean interuptstatus = Machine.interupt().disable();
+		
+		//must only be called once
+		//if joinQueue is not initiated		
+		if (joinQueue == null) {
+			joinQueue = ThreadedKernel.scheduler.newThreadQueue(true);  
+			//aquires this join thread as holder
+			joinQueue.acquire(this);
+		}
+
+		//makes sure this thread is still running and not the current "master thread"
+		if(this != currentThread && status != statusFinish){
+			joinQueue.waitForAccess(currentThread);
+         		// sleeps in queue
+        		currentThread.sleep();
+			}
+  			
+			//re-enable interupts
+			Machine.interrupt().restore(interuptstatus);
 	}
+
 
 	/**
 	 * Create the idle thread. Whenever there are no threads ready to be run,
@@ -451,6 +484,8 @@ public class KThread {
 	private Runnable target;
 
 	private TCB tcb;
+	
+	private ThreadQueue joinQueue  = null; //used for joining; ~bb
 
 	/**
 	 * Unique identifer for this thread. Used to deterministically compare
