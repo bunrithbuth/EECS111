@@ -2,7 +2,6 @@ package nachos.threads;
 
 import nachos.machine.*;
 import java.util.LinkedList;
-
 /**
  * Uses the hardware timer to provide preemption, and to allow threads to sleep
  * until a certain time.
@@ -81,5 +80,11 @@ public class Alarm {
         Machine.interrupt().disable();
         KThread.currentThread().sleep();
 	}
+	
+	
+public void selfTest(){
+	System.out.print("time:");
+	System.out.println(Machine.timer().getTime());
+}
     
 }
