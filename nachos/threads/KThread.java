@@ -442,11 +442,137 @@ public class KThread {
 	 * Tests whether this module is working.
 	 */
 	public static void selfTest() {
+		System.out.println("KThread Self Test 1 ---------------------");
 		Lib.debug(dbgThread, "Enter KThread.selfTest");
 
 		new KThread(new PingTest(1)).setName("forked thread").fork();
 		new PingTest(0).run();
 	}
+
+
+
+	 public static void selfTest2() {
+		System.out.println("KThread Self Test 2 ---------------------");
+
+		Lib.debug(dbgThread, "KThread.selfTest2:");
+
+    		Runnable myrunnable1 = new Runnable() {
+
+        		public void run() { 
+            			int i = 0;
+            			while(i < 10) { 
+                			System.out.println("*** in while1 loop " + i + " ***");
+                			i++;
+            			}  
+        		}
+    		};
+
+    		testThread = new KThread(myrunnable1);
+
+    		Runnable myrunnable2 = new Runnable() {
+        		public void run() { 
+           			testThread.join();
+			
+            			int i = 0;
+		                while(i < 10) { 
+                			System.out.println("*** in while2 loop " + i + " ***");
+                			i++;
+            			} /*yield();*/ 
+        		}
+   		};
+
+		t2 = new KThread(myrunnable2);
+		
+		Runnable myrunnable3 = new Runnable() {
+        		public void run() { 
+           			t2.join();
+
+            			int i = 0;
+		                while(i < 10) { 
+                			System.out.println("*** in while3 loop " + i + " ***");
+                			i++;
+            			} /*yield();*/ 
+        		}
+		};	
+	
+		KThread t3 = new KThread(myrunnable3);	
+	
+		t3.fork();
+		t2.fork();
+		testThread.fork();		
+		t2.join();
+		t3.join();
+    		yield();
+	}
+
+
+
+	public static void selfTest3() {
+		System.out.println("KThread Self Test 3 ---------------------");
+
+		Lib.debug(dbgThread, "KThread.selfTest3:");
+
+    		Runnable myrunnable1 = new Runnable() {
+
+        		public void run() { 
+            			int i = 0;
+            			while(i < 10) { 
+                			System.out.println("*** in while1 loop " + i + " ***");
+                			i++;
+            			}  
+        		}
+    		};
+
+    		t1 = new KThread(myrunnable1);
+
+    		Runnable myrunnable2 = new Runnable() {
+        		public void run() { 
+            			int i = 0;
+		                while(i < 10) { 
+                			System.out.println("*** in while2 loop " + i + " ***");
+                			i++;
+            			} /*yield();*/ 
+        		}
+   		};
+
+		t2 = new KThread(myrunnable2);
+		
+		Runnable myrunnable3 = new Runnable() {
+        		public void run() {
+				t1.join(); 
+           			t2.join();
+            			int i = 0;
+		                while(i < 10) { 
+                			System.out.println("*** in while3 loop " + i + " ***");
+                			i++;
+            			} /*yield();*/ 
+        		}
+		};
+	
+		Runnable myrunnable4 = new Runnable() {
+        		public void run() {
+				t1.join();
+            			int i = 0;
+		                while(i < 10) { 
+                			System.out.println("*** in while4 loop " + i + " ***");
+                			i++;
+            			} /*yield();*/ 
+        		}
+		};
+
+	
+		KThread t3 = new KThread(myrunnable3);	
+	
+		t4 = new KThread(myrunnable4);		
+	
+		t4.fork();
+		t3.fork();
+		t2.fork();
+		t1.fork();
+		t3.join();  // put to sleep needs to wake up. adding it joinqueue of masterthread(?).
+    		yield();
+	}
+
 
 	private static final char dbgThread = 't';
 
@@ -498,4 +624,8 @@ public class KThread {
 	private static KThread toBeDestroyed = null;
 
 	private static KThread idleThread = null;
+	
+	private static KThread testThread = null;  //for test2
+
+	private static KThread t1,t2,t4 = null;
 }
