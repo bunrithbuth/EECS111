@@ -80,5 +80,11 @@ public class Alarm {
         Machine.interrupt().disable();
         KThread.currentThread().sleep();
 	}
+	
+	
+public void selfTest(){
+	System.out.print("time:");
+	System.out.println(Machine.timer().getTime());
+}
     
 }
