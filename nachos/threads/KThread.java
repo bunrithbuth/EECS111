@@ -54,7 +54,6 @@ public class KThread {
 	 * create an idle thread as well.
 	 */
 	public KThread() {
-		if(D) System.out.println("Testing print ---------------------------------- !!!!!!!!!!!!");
 		if (currentThread != null) {
 			tcb = new TCB();
 		}
@@ -157,7 +156,6 @@ public class KThread {
 
 		tcb.start(new Runnable() {
 			public void run() {
-				if(D) System.out.println("!!!!!!!!!!!!!!!! TEST !!!!!!!!!!!!!!!!!!!!!!!");
 				runThread();
 			}
 		});
@@ -169,7 +167,6 @@ public class KThread {
 
 	private void runThread() {
 		begin();
-		if(D) System.out.println("Thread " + getName() + " is about to run");
 		target.run();
 		finish();
 	}
@@ -198,18 +195,16 @@ public class KThread {
 		Lib.debug(dbgThread, "Finishing thread: " + currentThread.toString());
 
 		Machine.interrupt().disable();
-		
+
 		ThreadQueue curJoinQueue = currentThread.joinQueue;
 
-    		//this runs all the threads that were joined until finish;
-		//if no joinQueue created then createdjoinqueue is null
-		if (createdJoinQueue != null) {
-        		KThread thread = createdJoinQueue.nextThread();
-        		while(thread != null) {
-           	 		thread.ready();
-            			thread = creadJoinQueue.nextThread();
-        		}
-    		}
+    			if (curJoinQueue != null) {
+        			KThread thread = curJoinQueue.nextThread();
+        			while(thread != null) {
+            				thread.ready();
+            				thread = curJoinQueue.nextThread();
+        			}
+    				}
 
 		Machine.autoGrader().finishingCurrentThread();
 
@@ -295,13 +290,14 @@ public class KThread {
 	 * return immediately. This method must only be called once; the second call
 	 * is not guaranteed to return. This thread must not be the current thread.
 	 */
+		
 	public void join() {
 		Lib.debug(dbgThread, "Joining to thread: " + toString());
 
 		Lib.assertTrue(this != currentThread);
 
 		//Disable interrupts;
-		boolean interuptstatus = Machine.interupt().disable();
+		boolean interuptstatus = Machine.interrupt().disable();
 		
 		//must only be called once
 		//if joinQueue is not initiated		
@@ -312,7 +308,7 @@ public class KThread {
 		}
 
 		//makes sure this thread is still running and not the current "master thread"
-		if(this != currentThread && status != statusFinish){
+		if(this != currentThread && status != statusFinished){
 			joinQueue.waitForAccess(currentThread);
          		// sleeps in queue
         		currentThread.sleep();
@@ -321,7 +317,6 @@ public class KThread {
 			//re-enable interupts
 			Machine.interrupt().restore(interuptstatus);
 	}
-
 
 	/**
 	 * Create the idle thread. Whenever there are no threads ready to be run,
@@ -484,7 +479,7 @@ public class KThread {
 	private Runnable target;
 
 	private TCB tcb;
-	
+
 	private ThreadQueue joinQueue  = null; //used for joining; ~bb
 
 	/**
@@ -503,6 +498,4 @@ public class KThread {
 	private static KThread toBeDestroyed = null;
 
 	private static KThread idleThread = null;
-	
-	private static final boolean D = false;
 }
